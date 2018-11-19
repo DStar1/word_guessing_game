@@ -44,6 +44,9 @@ def choose_random_word(level):
 	# print(word)
 	return word
 
+
+
+
 # Creates string with stars representing unknown letters in word
 def show_word(word, word_count):
 	word_to_show = ""
@@ -56,6 +59,8 @@ def show_word(word, word_count):
 			else:
 				word_to_show += '_'#print('*', end="")
 	return word_to_show, num_letters_correct
+
+
 
 def choose_letter(count):
 	# r_idx = random.randint(0, len(count)-1)
@@ -102,8 +107,53 @@ def letter_input(guesses):
 			break
 	return c
 
+
+class Guesser:
+	def __init__(self):
+		self.word_guess = None
+		self.char_guess = None
+	
+	# Choose either random letter or max occorences letter
+	def choose_letter(self, count):
+		# r_idx = random.randint(0, len(count)-1)
+		# r_idx = 0
+		c = max(count, key=count.get)
+
+		# c = list(count)
+		# c = c[r_idx]
+		return c
+
+	# Optimizes counter dictionary to only have letters from words with same letter positions in word and same length as word
+	## Maybe add way of guessing if there is only one word left in (all_words_count)
+	def optimize_all_words_count(self, word_to_show, num_letters_correct, level, wrong_guesses, guesses):
+		self.word_guess = None
+		self.char_guess = None
+		words = split_text(level, len(word_to_show))
+		all_words_count = ""
+		words_len = 0
+		ret_word = None
+		for word in words:
+			# if len(word) == len(word_to_show):
+			if sum(1 if (c1 == c2 and c1 not in wrong_guesses) else 0 for c1, c2 in zip(word, word_to_show)) == num_letters_correct:
+				all_words_count += word
+				print(word, end=',')
+				words_len += 1
+				if words_len == 1:
+					ret_word = word
+
+		if words_len == 1:
+			print("\nSending:", ret_word + '\n')
+			self.word_guess = ret_word
+			return
+		
+		letters = letter_count(all_words_count, guesses)
+		self.char_guess = choose_letter(letters)
+
+
+
 # Main game loop
 def game_loop2(word, level):
+	guesser = Guesser()
 	data = access_api(level)
 	all_words_count = letter_count(data, ['\n'])
 	word_count = letter_count(word, ['\n'])
@@ -113,21 +163,18 @@ def game_loop2(word, level):
 	c = ''
 	word_to_show, num_letters_correct = show_word(word, word_count)
 	while 1:
-		# user_input = input("Input guess, or -c for computer aid:")
-		word_guess = 0
 		c = letter_input(guesses)
-		all_words_count = c ## Fix this
-		if c == '-':# or len(c) > 1:
-			word_guess, all_words_count = optimize_all_words_count(word_to_show, num_letters_correct, level, wrong_guesses, guesses)
-		if len(c) > 1 or (c == '-' and word_guess == 1):
+		if len(c) > 1:
+			guesser.word_guess = c
+		if c == '-':
+			guesser.optimize_all_words_count(word_to_show, num_letters_correct, level, wrong_guesses, guesses)
+			c = guesser.char_guess
+		if guesser.word_guess:
 			# Check if word is the right word
-			# print("THE WORDS TO BE COMPARED:", word, all_words_count, word_guess)
-			if all_words_count == word:
+			if guesser.word_guess == word:
 				print(word)
 				print("YOU WIN!!!!!")
 				break
-		elif (c == '-' and word_guess == 0):
-			c = choose_letter(all_words_count)
 		print("\nGuess is", c)
 		print(all_words_count)
 		# del all_words_count[c]# Maybe not needed
