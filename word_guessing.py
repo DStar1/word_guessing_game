@@ -5,14 +5,18 @@ import random
 import sys
 
 # Accesses API and return a string
-def access_api(level):
-	d = "/difficulty=" + level
-	r = requests.get("http://app.linkedin-reach.io/words?" + d)
+def access_api(level, length=None):
+	api_filters = "?"
+	if level.isdigit():
+		api_filters += "difficulty=" + level + "&"
+	if length:# and length.isdigit():
+		api_filters += "minLength=" + str(length) + "&" + "maxLength=" + str(length+1) + "&"
+	r = requests.get("http://app.linkedin-reach.io/words" + api_filters)
 	return r.text
 
 # Returns split text list
-def split_text(level):
-	data = access_api(level)
+def split_text(level, length=None):
+	data = access_api(level, length)
 	return data.split(sep='\n')
 
 # Finds word in api
@@ -41,7 +45,7 @@ def choose_random_word(level):
 	return word
 
 # Choose either random letter or max occorences letter
-def choose_random_letter(count):
+def choose_letter(count):
 	# r_idx = random.randint(0, len(count)-1)
 	r_idx = 0
 	c = max(count, key=count.get)
@@ -66,13 +70,14 @@ def show_word(word, word_count):
 				word_to_show += c#print(c, end="")
 				num_letters_correct += 1
 			else:
-				word_to_show += '*'#print('*', end="")
+				word_to_show += '_'#print('*', end="")
 	return word_to_show, num_letters_correct
 
 # Optimizes counter dictionary to only have letters from words with same letter positions in word and same length as word
+## Maybe add way of guessing if there is only one word left in (all_words_count)
 def optimize_all_words_count(word_to_show, num_letters_correct, level, wrong_guesses, guesses):
 	all_words_count = ""
-	for word in split_text(level):
+	for word in split_text(level, len(word_to_show)):
 		if len(word) == len(word_to_show):
 			if sum(1 if (c1 == c2 and c1 not in wrong_guesses) else 0 for c1, c2 in zip(word, word_to_show)) == num_letters_correct:
 				all_words_count += word
@@ -113,7 +118,7 @@ def game_loop2(word, level):
 	show_word(word, word_count)
 	while 1:
 		# c = letter_input(guesses)
-		c = choose_random_letter(all_words_count)
+		c = choose_letter(all_words_count)
 		print("\nGuess is", c)
 		print(all_words_count)
 		# del all_words_count[c]# Maybe not needed
