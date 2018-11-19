@@ -44,22 +44,6 @@ def choose_random_word(level):
 	# print(word)
 	return word
 
-# Choose either random letter or max occorences letter
-def choose_letter(count):
-	# r_idx = random.randint(0, len(count)-1)
-	r_idx = 0
-	c = max(count, key=count.get)
-
-	# c = list(count)
-	# c = c[r_idx]
-
-	# print(c)
-	# print("Count char:", r_idx, c, count[c])
-	# print("len_count_words: ", len(count))
-	# print("Letter chosen is:", c)
-	return c
-
-
 # Creates string with stars representing unknown letters in word
 def show_word(word, word_count):
 	word_to_show = ""
@@ -73,36 +57,48 @@ def show_word(word, word_count):
 				word_to_show += '_'#print('*', end="")
 	return word_to_show, num_letters_correct
 
+def choose_letter(count):
+	# r_idx = random.randint(0, len(count)-1)
+	# r_idx = 0
+	c = max(count, key=count.get)
+
+	# c = list(count)
+	# c = c[r_idx]
+	return c
+
 # Optimizes counter dictionary to only have letters from words with same letter positions in word and same length as word
 ## Maybe add way of guessing if there is only one word left in (all_words_count)
 def optimize_all_words_count(word_to_show, num_letters_correct, level, wrong_guesses, guesses):
+	words = split_text(level, len(word_to_show))
 	all_words_count = ""
-	for word in split_text(level, len(word_to_show)):
-		if len(word) == len(word_to_show):
-			if sum(1 if (c1 == c2 and c1 not in wrong_guesses) else 0 for c1, c2 in zip(word, word_to_show)) == num_letters_correct:
-				all_words_count += word
-				print(word, end=',')
-	return letter_count(all_words_count, guesses)
+	words_len = 0
+	ret_word = ""
+	for word in words:
+		# if len(word) == len(word_to_show):
+		if sum(1 if (c1 == c2 and c1 not in wrong_guesses) else 0 for c1, c2 in zip(word, word_to_show)) == num_letters_correct:
+			all_words_count += word
+			print(word, end=',')
+			words_len += 1
+			if words_len == 1:
+				ret_word = word
 
-# def game_loop():
-# 	while 1:
-# 		word = input("Enter a word to guess(hit enter with no word to end game): ")
-# 		if word == "":
-# 			print("Ending game, bye!")
-# 			return
-# 		elif find_word_chosen(word):
-# 			print("YOU WIN!")
-# 			return
-# 		else:
-# 			print("You loose :(")
+	if words_len == 1:
+		print("\nSending:", ret_word + '\n')
+		return 1, ret_word
+	return 0, letter_count(all_words_count, guesses)
 
 # Option for human player to enter letters
 def letter_input(guesses):
 	while 1:
-		c = chr(ord(input("Enter a letter to guess(hit enter with no word to end game): ")[0]))
+		# Make better looping fuction for entering correct data
+		c = input("Enter a letter to guess, '-' for computer aid (hit enter with no word to end game): ")
 		if c in guesses:
 			print("Already tried, choose another!")
 		else:
+			if len(c) > 1:
+				print("LEEEEENNNNGGGGGTTGTHH")
+				return c
+			c = chr(ord(c[0]))
 			break
 	return c
 
@@ -115,10 +111,23 @@ def game_loop2(word, level):
 	wrong_guesses = []
 	guesses = []
 	c = ''
-	show_word(word, word_count)
+	word_to_show, num_letters_correct = show_word(word, word_count)
 	while 1:
-		# c = letter_input(guesses)
-		c = choose_letter(all_words_count)
+		# user_input = input("Input guess, or -c for computer aid:")
+		word_guess = 0
+		c = letter_input(guesses)
+		all_words_count = c ## Fix this
+		if c == '-':# or len(c) > 1:
+			word_guess, all_words_count = optimize_all_words_count(word_to_show, num_letters_correct, level, wrong_guesses, guesses)
+		if len(c) > 1 or (c == '-' and word_guess == 1):
+			# Check if word is the right word
+			# print("THE WORDS TO BE COMPARED:", word, all_words_count, word_guess)
+			if all_words_count == word:
+				print(word)
+				print("YOU WIN!!!!!")
+				break
+		elif (c == '-' and word_guess == 0):
+			c = choose_letter(all_words_count)
 		print("\nGuess is", c)
 		print(all_words_count)
 		# del all_words_count[c]# Maybe not needed
@@ -143,13 +152,16 @@ def game_loop2(word, level):
 		if sum(word_count.values()) <= 0:
 			print("YOU WIN!!!!!")
 			break
-
-		all_words_count = optimize_all_words_count(word_to_show, num_letters_correct, level, wrong_guesses, guesses)
 	print("The word was :", word)
 
 # Main()
 if __name__ == '__main__':
-	level = input("Enter level int 1-10: ")
-	word = choose_random_word(level)
-	print("Word length is :", len(word), "and the level is :", level)
-	game_loop2(word, level)
+	while 1:
+		level = input("Enter level int 1-10: ")
+		word = choose_random_word(level)
+		print("Word length is :", len(word), "and the level is :", level)
+		game_loop2(word, level)
+		if input("Would you like to play again? 1 = yes, anything else = no:") == '1':
+			continue
+		else:
+			break
