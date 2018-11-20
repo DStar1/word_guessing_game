@@ -7,12 +7,38 @@ import sys
 DEV = True
 
 class INPUT_PARSER:
-	def __init__(self, flags):
+	def __init__(self, message, options, flags=["-help"]):# -help and all options in flags ('-' in options)
 		self.flags = flags#list
+		self.message = message#"Enter a letter to guess, '-' for computer aid (hit enter with no word to end game): "
+		self.input = None
 	
 	# def verification():
 
-	# def input_loop():
+	# def flag_handler(self):
+	# 	if 
+
+	def input_loop(self):
+		while 1:
+			self.input = input(message)
+			if self.input in flags:
+				self.flag_handler()
+			elif self.input in options:
+				self.options_handler()
+			
+
+	# Option for human player to enter letters
+	def letter_input(guesses):
+		while 1:
+			# Enter looping fuction for correct data
+			self.input_loop()
+			if self.input in guesses:
+				print("Already tried, choose another!")
+			else:
+				if len(self.input) > 1:
+					return self.input
+				self.input = chr(ord(self.input[0]))
+				break
+		return self.input
 
 # Create counter dict for letters in string while removing specified chars
 def letter_count(data, letters_to_remove):
@@ -129,7 +155,7 @@ class SECRET:
 	def show_underscore_word(self):
 		word_to_show = ""
 		self.word_count = letter_count(self.word_count, ['\n'])
-		print(self.word_count)
+		# print(self.word_count)
 		num_letters_correct = 0
 		for c in self.word:
 			if c in self.word_count:
@@ -153,12 +179,15 @@ def game_loop2(api_handler):
 	secret = SECRET(word)
 	c = ''
 	while 1:
+		# Print all information and graphics (will be in graphics class)
 		print("\nWord length is :", len(word), "and the level is :", api_handler.level)
 		print("Total guesses:", len(secret.guesses), "times")
 		print("Wrong guesses:", secret.wrong_guesses, "Number of tries left:", 6 - len(secret.wrong_guesses), "You've guessed", len(secret.guesses), "times")
+		# Show underscore word
 		secret.show_underscore_word()
+		# Input info for letter or word(will be in class)
+		c = letter_input(secret.guesses)
 
-		c = letter_input(secret.guesses)#input class
 		if len(c) > 1:
 			guesser.word_guess = c
 		if c == '-':
