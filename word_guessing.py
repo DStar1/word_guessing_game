@@ -5,40 +5,10 @@ import random
 import sys
 
 DEV = True
-
-class INPUT_PARSER:
-	def __init__(self, message, options, flags=["-help"]):# -help and all options in flags ('-' in options)
-		self.flags = flags#list
-		self.message = message#"Enter a letter to guess, '-' for computer aid (hit enter with no word to end game): "
-		self.input = None
-	
-	# def verification():
-
-	# def flag_handler(self):
-	# 	if 
-
-	def input_loop(self):
-		while 1:
-			self.input = input(message)
-			if self.input in flags:
-				self.flag_handler()
-			elif self.input in options:
-				self.options_handler()
-			
-
-	# Option for human player to enter letters
-	def letter_input(guesses):
-		while 1:
-			# Enter looping fuction for correct data
-			self.input_loop()
-			if self.input in guesses:
-				print("Already tried, choose another!")
-			else:
-				if len(self.input) > 1:
-					return self.input
-				self.input = chr(ord(self.input[0]))
-				break
-		return self.input
+# Write out hangman instructions
+help_message = "\nTo play enter the level 1-10, then a valid letter or '-' for the computer to make a guess for you.\
+				\nWhen prompted to play again, enter y/n to play again\nType -exit anywhere to exit\n"
+bye_message = "\nEnding game, bye! Hope to see you again soon!\n"
 
 # Create counter dict for letters in string while removing specified chars
 def letter_count(data, letters_to_remove):
@@ -49,20 +19,6 @@ def letter_count(data, letters_to_remove):
 			del count[l]
 	# print(count)
 	return count
-
-# Option for human player to enter letters
-def letter_input(guesses):
-	while 1:
-		# Make better looping fuction for entering correct data
-		c = input("Enter a letter to guess, '-' for computer aid (hit enter with no word to end game): ")
-		if c in guesses:
-			print("Already tried, choose another!")
-		else:
-			if len(c) > 1:
-				return c
-			c = chr(ord(c[0]))
-			break
-	return c
 
 class GUESSER:
 	def __init__(self):
@@ -76,7 +32,7 @@ class GUESSER:
 
 	# Optimizes counter dictionary to only have letters from words with same letter positions in word and same length as word
 	## Maybe add way of guessing if there is only one word left in (all_words_count)
-	def optimize_all_words_count(self, word_to_show, num_letters_correct, wrong_guesses, guesses, api_handler):
+	def optimize_all_words_count(self, secret, api_handler):
 		self.word_guess = None
 		self.char_guess = None
 		words = api_handler.split_text()
@@ -85,7 +41,7 @@ class GUESSER:
 		ret_word = None
 		for word in words:
 			# if len(word) == len(word_to_show):
-			if sum(1 if (c1 == c2 and c1 not in wrong_guesses) else 0 for c1, c2 in zip(word, word_to_show)) == num_letters_correct:
+			if sum(1 if (c1 == c2 and c1 not in secret.wrong_guesses) else 0 for c1, c2 in zip(word, secret.word_to_show)) == secret.num_letters_correct:
 				all_words_count += word
 				if DEV:
 					print(word, end=',')
@@ -94,12 +50,10 @@ class GUESSER:
 					ret_word = word
 
 		if words_len == 1:
-			if DEV:
-				print("\nSending:", ret_word + '\n')
 			self.word_guess = ret_word
 			return
 		
-		letters = letter_count(all_words_count, guesses)
+		letters = letter_count(all_words_count, secret.guesses)
 		if DEV:
 			print("\n\n", letters)
 		self.char_guess = self.choose_letter(letters)
@@ -143,13 +97,13 @@ class API_HANDLER:
 class SECRET:
 	def __init__(self, word):
 		self.word = word
+		self.word_len = len(word)
 		self.word_to_show = ""
 		self.word_count = letter_count(self.word, ['\n'])
 		self.num_letters_correct = 0
 		self.wrong_guesses = []
 		self.guesses = []
 		self.num_guesses_left = 6
-		# super.api_handler
 
 	# Creates string with underscores representing unknown letters in word
 	def show_underscore_word(self):
@@ -171,38 +125,105 @@ class SECRET:
 		self.word_to_show = word_to_show
 		# return word_to_show, num_letters_correct
 
+
+class INPUT_PARSER:
+	def __init__(self, message, options, flags=["-help", "-exit"], exit_loop=False):# -help and all options in flags ('-' in options)
+		self.flags = flags#list
+		self.message = message#"Enter a letter to guess, '-' for computer aid (hit enter with no word to end game): "
+		self.input = None
+		self.exit_loop_global = exit_loop
+		self.exit_loop = exit_loop
+		self.options = options
+
+	def flag_handler(self):
+		if self.input == "-help":
+			print(help_message)
+		elif self.input == "-exit":
+			print(bye_message)
+			exit()
+		
+	def check_letter_word_input(self, secret, letter_word_input):
+		if letter_word_input:
+			if self.input in secret.guesses: 
+				print("\nAlready tried, choose another!\n")
+				return 1
+			elif self.input in self.options:#len(self.input) == 1:
+				self.input = chr(ord(self.input))#chr(ord(self.input[0]))#change
+			elif len(self.input) == 1 or len(self.input) != secret.word_len:
+				print("Invalid input, -help for usage")
+				return 1
+		return 0
+
+	def input_loop(self, secret=None, letter_word_input=False):
+		self.exit_loop = self.exit_loop_global
+		while 1:
+			self.input = input(self.message)
+			# Check if input is a flag
+			if self.input in self.flags:
+				self.flag_handler()
+			# Check if input is in possible options or if it is a word input
+			elif self.input in self.options or letter_word_input:
+				self.exit_loop = False
+				if self.check_letter_word_input(secret, letter_word_input):
+					continue
+				break
+			elif self.exit_loop:
+				break
+			else:
+				print("Invalid input, -help for usage")
+
+class PRINT:
+	def __init__(self):
+		self.help_message = "\nTo play enter the level 1-10, then a valid letter or '-' for the computer to make a guess for you.\
+						\nWhen prompted to play again, enter y/n to play again\nType -exit anywhere to exit\n"
+		self.bye_message = "\nEnding game, bye! Hope to see you again soon!\n"
+		self.letter_input = "Enter a letter to guess, '-' for computer aid (hit enter with no word to end game): "
+		self.play_again = "Would you like to play again? y/n: "
+		self.level = "\nEnter level int 1-10: "
+
+	def print_progress_info(self, api_handler, secret):
+		print("\nWord length is:", len(api_handler.word), "\nLevel is:", api_handler.level)
+		print("Total guesses:", len(secret.guesses))
+		print("Wrong guesses:", secret.wrong_guesses, "\nRemaining guesses:", 6 - len(secret.wrong_guesses))
+	
+	def new_game_header(self):
+		print("\n\n\nNEW GAME\n")
+
+
 # Main game loop
-def game_loop2(api_handler):
+def game_loop2(api_handler, print_class):
 	guesser = GUESSER()
 	word = api_handler.word
 	data = api_handler.access_api()
 	secret = SECRET(word)
+	letter_options = list(map(str,map(chr,list(range(ord('a'),ord('z')+1)))))
+	letter_options.append('-')
+	letter_input = INPUT_PARSER(message=print_class.letter_input, options=letter_options, exit_loop=False)#, guesses=secret.guesses)
 	c = ''
 	while 1:
-		# Print all information and graphics (will be in graphics class)
-		print("\nWord length is :", len(word), "and the level is :", api_handler.level)
-		print("Total guesses:", len(secret.guesses), "times")
-		print("Wrong guesses:", secret.wrong_guesses, "Number of tries left:", 6 - len(secret.wrong_guesses), "You've guessed", len(secret.guesses), "times")
+		# Print all progress information and graphics
+		print_class.print_progress_info(api_handler, secret)
+	
 		# Show underscore word
 		secret.show_underscore_word()
+	
 		# Input info for letter or word(will be in class)
-		c = letter_input(secret.guesses)
+		letter_input.input_loop(secret=secret, letter_word_input=True)
+		c = letter_input.input
 
 		if len(c) > 1:
 			guesser.word_guess = c
+		# Let computer guess
 		if c == '-':
-			guesser.optimize_all_words_count(secret.word_to_show, secret.num_letters_correct, secret.wrong_guesses, secret.guesses, api_handler)
+			guesser.optimize_all_words_count(secret, api_handler)
 			c = guesser.char_guess
+		# Check if word is the right word
 		if guesser.word_guess:
-			# Check if word is the right word
 			if guesser.word_guess == word:
 				print(word)
 				print("YOU WIN!!!!!")
 				break
-		if word == "":
-			print("Ending game, bye!")
-			break
-		elif c in word and secret.word_count[c] > 0:
+		elif c in word and c not in secret.word_to_show:#secret.word_count[c] > 0:
 			secret.word_count[c] = 0
 			print("\'" + c + "\'" , "is correct! You got one! :)")
 		else:
@@ -221,12 +242,17 @@ def game_loop2(api_handler):
 
 # Main()
 if __name__ == '__main__':
+	api_endpoint = "http://app.linkedin-reach.io/words"
+	print_class = PRINT()
+	play_again = INPUT_PARSER(message=print_class.play_again, options=["y"], exit_loop=True)
+	level_options = list(map(str,list(range(1,11))))
+	level = INPUT_PARSER(message=print_class.level, options=level_options, exit_loop=False)
 	while 1:
-		level = input("\n\n\nNEW GAME\n\nEnter level int 1-10: ")
-		api_endpoint = "http://app.linkedin-reach.io/words"
-		api_handler = API_HANDLER(api_endpoint, level)
-		game_loop2(api_handler)
-		if input("Would you like to play again? 1 = yes, anything else = no:") == '1':
-			continue
-		else:
+		print_class.new_game_header()
+		level.input_loop()
+		api_handler = API_HANDLER(api_endpoint, level.input)
+		game_loop2(api_handler, print_class)
+		play_again.input_loop()
+		if play_again.exit_loop:
+			print_class.bye_message
 			break
