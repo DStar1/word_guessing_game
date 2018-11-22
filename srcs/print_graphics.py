@@ -1,9 +1,18 @@
 import os
+from termcolor import colored, cprint
 
 class GRAPHICS:
 	def __init__(self):
-		self.body_parts = ["O", "|", "-", "-", "/", "\\"]
-		self.parts = ["/", "___", "\\", "|"]
+		self.body_parts = [	colored("O", "magenta", attrs=["bold"]), 
+							colored("|", "green", attrs=["bold"]),
+							colored("-", "red", attrs=["bold"]),
+							colored("-", "red", attrs=["bold"]),
+							colored("/", "blue", attrs=["bold"]),
+							colored("\\", "blue", attrs=["bold"])]
+		self.parts = [		colored("/", "cyan", attrs=["bold"]),#"/", 
+							colored("___", "cyan", attrs=["bold"]),#"___",
+							colored("\\", "cyan", attrs=["bold"]),#"\\",
+							colored("|", "cyan", attrs=["bold"])]#"|"]
 
 	def draw_person(self, num_wrong_guesses):
 		for i in range(num_wrong_guesses):
@@ -34,21 +43,19 @@ class PRINT(GRAPHICS):
 			self.level = level
 
 	def new_game_header(self):
-		print("NEW GAME OF HANGMAN\n")
+		cprint("NEW GAME OF HANGMAN\n", "blue")
 
 	def print_progress_info(self):
 		self.clear_screen()
+		self.new_game_header()
 		if not self.secret:
-			self.new_game_header()
 			print(f"    {self.parts[1]}  ")
 			print(f"   {self.parts[0]}   {self.parts[2]}")
 			print(f"       {self.parts[3]}")
 			print(f"       {self.parts[3]}")
 			print(f"       {self.parts[3]}")
 			print(f"     {self.parts[1]}")
-			# print(self.print_parts)
 		else:
-			# print(self.print_parts)
 			print(f"    {self.parts[1]}  ")
 			print(f"   {self.parts[0]}   {self.parts[2]}", end="")
 			print("	 Word length is:", len(self.secret.word))
@@ -67,22 +74,20 @@ class PRINT(GRAPHICS):
 	def correct(self, correct, guesser):
 		self.print_progress_info()
 		if correct:
-			print("\'" + guesser.input + "\'" , "is correct! :)")
+			cprint(f"\'{guesser.input}\' is correct! :)", "green")
 		else:
-			print("\'" + guesser.input + "\'" , "is not correct! :(")
+			cprint(f"\'{guesser.input}\' is not correct! :(", "red")
 
 	def invalid_input(self, start= False):
 		self.print_progress_info()
-		print("Invalid input, -help for usage")
+		cprint("Invalid input, -help for usage", "red")
 	
 	def win_loose(self, win):
 		self.print_progress_info()
 		if win:
-			print("\nYOU WIN!!!!!\n")
+			cprint("\nYOU WIN!!!!!\n", "green")
 		else:
-			print("\nYou LOST after 6 wrong guesses :(\n")
-	
-	def print_correct_word(self):
+			cprint("\nYou LOST after 6 wrong guesses :(\n", "red")
 		print(f"The word was {self.secret.word}\n")
 
 	def help(self):
