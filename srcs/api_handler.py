@@ -1,4 +1,5 @@
 from config import DEV, print_class, api_endpoint
+from termcolor import colored, cprint
 import requests
 import random
 
@@ -22,8 +23,15 @@ class API_HANDLER:
 		return parameters
 
 	# Accesses API and return a string
+	# if 200 status code not recieved, throw error
 	def access_api(self):
-		r = requests.get(self.endpoint + self.parameters)
+		try:
+			r = requests.get(self.endpoint + self.parameters)
+			if r.status_code != 200:
+				raise Exception(colored("200 status code not recieved\n", "red"))
+		except Exception as e:
+			cprint(f"\nError: {str(e)}\n", "red")
+			exit()
 		return r.text
 
 	# Returns split text list
