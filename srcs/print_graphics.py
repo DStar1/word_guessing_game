@@ -29,7 +29,6 @@ class PRINT(GRAPHICS):
 		self.level_input = "\nEnter level int 1-10: "
 		self.secret = None
 		self.print_parts = None
-		# self.play_again = False
 
 
 	# Clears the screen for UI

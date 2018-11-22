@@ -4,26 +4,9 @@ import secret_player
 from input_handler import INPUT_PARSER
 from api_handler import API_HANDLER
 from config import DEV, print_class
+from helpers import exit_function, create_sint_list, win_or_loose
 import signal
 import sys
-
-# Clean exit with interrupt
-def exit_function(signal, frame):
-    print(print_class.bye_message)
-    exit()
-
-# Creates an int list and the maps them to for input options list
-def create_sint_list(start, end):
-	return list(map(str,list(range(start,end+1))))
-
-def win_or_loose(secret):
-	if len(secret.wrong_guesses) >= 6:
-		print_class.win_loose(False)
-		return True
-	if secret.word_to_show == secret.word or not len(secret.remaining_letters):
-		print_class.win_loose(True)
-		return True
-	return False
 
 def check_input(secret, guesser, api_handler):
 	correct = False
