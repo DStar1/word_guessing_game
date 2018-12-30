@@ -1,6 +1,6 @@
 from config import DEV, print_class
 
-class INPUT_PARSER:
+class Input_Parser:
 	def __init__(self, message, options, flags=["-help", "-exit"], exit_loop=False):
 		self.flags = flags
 		self.message = message

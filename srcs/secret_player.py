@@ -1,6 +1,6 @@
 from config import DEV, print_class
 
-class SECRET:
+class Secret:
 	def __init__(self, word):
 		self.word = word
 		self.word_len = len(word)

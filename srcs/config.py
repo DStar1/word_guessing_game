@@ -1,5 +1,6 @@
-from print_graphics import PRINT
+from print_graphics import Print
 
 DEV = False
-print_class = PRINT()
+print_class = Print()
 api_endpoint = "http://app.linkedin-reach.io/words"
+# api_endpoint = "https://www.google.com"

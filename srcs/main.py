@@ -1,8 +1,8 @@
 from bs4 import BeautifulSoup
 import guess_player
 import secret_player
-from input_handler import INPUT_PARSER
-from api_handler import API_HANDLER
+from input_handler import Input_Parser
+from api_handler import Api_Handler
 from config import DEV, print_class
 from helpers import exit_function, create_sint_list, win_or_loose
 import signal
@@ -30,8 +30,8 @@ def check_input(secret, guesser, api_handler):
 
 # Main game loop
 def game_loop(api_handler):
-	guesser = guess_player.GUESSER(print_class)
-	secret = secret_player.SECRET(api_handler.word)
+	guesser = guess_player.Guesser(print_class)
+	secret = secret_player.Secret(api_handler.word)
 	print_class.update_print_variables(secret, level=api_handler.level)
 	print_class.print_progress_info()
 	while 1:
@@ -51,9 +51,9 @@ def game_loop(api_handler):
 # print_class and api_endpoint defined globally in config file
 if __name__ == '__main__':
 	signal.signal(signal.SIGINT, exit_function)
-	play_again = INPUT_PARSER(message=print_class.play_again, options=["y"], exit_loop=True)
+	play_again = Input_Parser(message=print_class.play_again, options=["y"], exit_loop=True)
 	level_options = create_sint_list(1, 10)
-	level = INPUT_PARSER(message=print_class.level_input, options=level_options, exit_loop=False)
+	level = Input_Parser(message=print_class.level_input, options=level_options, exit_loop=False)
 	while 1:
 		# Clears screen
 		print_class.clear_screen()
@@ -62,7 +62,7 @@ if __name__ == '__main__':
 		# Asks for level input 1-10
 		level.input_loop()
 		# API call to grab random word from dictionary
-		api_handler = API_HANDLER(level.input)
+		api_handler = Api_Handler(level.input)
 		# Game loop where the game is played
 		game_loop(api_handler)
 		# Asks whether or not you want to play again

@@ -3,7 +3,7 @@ from termcolor import colored, cprint
 import requests
 import random
 
-class API_HANDLER:
+class Api_Handler:
 	def __init__(self, level=None):
 		self.endpoint = api_endpoint
 		self.level = level
@@ -29,6 +29,8 @@ class API_HANDLER:
 			r = requests.get(self.endpoint + self.parameters)
 			if r.status_code != 200:
 				raise Exception(colored("200 status code not recieved\n", "red"))
+			if 'text/plain' not in r.headers['content-type']:
+				raise Exception(colored("Invalid response from API request\n", "red"))
 		except Exception as e:
 			cprint(f"\nError: {str(e)}\n", "red")
 			exit()

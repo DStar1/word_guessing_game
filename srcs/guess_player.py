@@ -1,8 +1,8 @@
-from main import INPUT_PARSER
+from main import Input_Parser
 from config import DEV, print_class
 from helpers import letter_count
 
-class GUESSER(INPUT_PARSER):
+class Guesser(Input_Parser):
 	def __init__(self, print_class):
 		self.letter_options = None
 		self.init_letter_input(print_class)

@@ -1,7 +1,7 @@
 import os
 from termcolor import colored, cprint
 
-class GRAPHICS:
+class Graphics:
 	def __init__(self):
 		self.body_parts = [	colored("O", "magenta", attrs=["bold"]), 
 							colored("|", "green", attrs=["bold"]),
@@ -9,16 +9,16 @@ class GRAPHICS:
 							colored("-", "red", attrs=["bold"]),
 							colored("/", "blue", attrs=["bold"]),
 							colored("\\", "blue", attrs=["bold"])]
-		self.parts = [		colored("/", "cyan", attrs=["bold"]),#"/", 
-							colored("___", "cyan", attrs=["bold"]),#"___",
-							colored("\\", "cyan", attrs=["bold"]),#"\\",
-							colored("|", "cyan", attrs=["bold"])]#"|"]
+		self.parts = [		colored("/", "cyan", attrs=["bold"]),
+							colored("___", "cyan", attrs=["bold"]),
+							colored("\\", "cyan", attrs=["bold"]),
+							colored("|", "cyan", attrs=["bold"])]
 
 	def draw_person(self, num_wrong_guesses):
 		for i in range(num_wrong_guesses):
 			print(self.body[i])
 
-class PRINT(GRAPHICS):
+class Print(Graphics):
 	def __init__(self):
 		super().__init__()
 		self.help_message = 	"\nTo play enter the level 1-10, then a valid letter or '-' for the computer to make a guess for you.\
@@ -63,7 +63,7 @@ class PRINT(GRAPHICS):
 			print(f" {self.print_parts[2]}{self.print_parts[1]}{self.print_parts[3]}   {self.parts[3]}", end='')
 			print("	 Total guesses:", len(self.secret.guesses))
 			print(f" {self.print_parts[4]} {self.print_parts[5]}   {self.parts[3]}", end='')
-			print("	 Wrong guesses:", self.secret.wrong_guesses)
+			cprint(f"	 Wrong guesses: {', '.join(self.secret.wrong_guesses)}", "red")
 			print(f"       {self.parts[3]}", end='')
 			print("	 Remaining guesses:", 6 - len(self.secret.wrong_guesses))
 			print(f"     {self.parts[1]}", end='')
